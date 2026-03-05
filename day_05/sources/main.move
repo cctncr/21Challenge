@@ -7,43 +7,30 @@
 
 module challenge::day_05 {
     use std::vector;
+    use std::string::String;
 
-    // Copy from day_04
     public struct Habit has copy, drop {
-        name: vector<u8>,
-        completed: bool,
+        name: String,
+        completed: bool
+    }
+
+    public fun new_habit(name: String): Habit {
+        Habit { name, completed: false }
     }
 
     public struct HabitList has drop {
-        habits: vector<Habit>,
-    }
-
-    public fun new_habit(name: vector<u8>): Habit {
-        Habit {
-            name,
-            completed: false,
-        }
+        habits: vector<Habit>
     }
 
     public fun empty_list(): HabitList {
         HabitList {
-            habits: vector::empty(),
+            habits: vector::empty()
         }
     }
-
-    public fun add_habit(list: &mut HabitList, habit: Habit) {
-        vector::push_back(&mut list.habits, habit);
+    public fun complete_habit(list: &mut HabitList, index: u64) {
+        if (index < vector::length(&list.habits)) {
+            vector::borrow_mut(&mut list.habits, index).completed = true
+        }
     }
-
-    // TODO: Write a function 'complete_habit' that:
-    // - Takes list: &mut HabitList and index: u64
-    // - Checks if index is valid (less than vector length)
-    // - If valid, marks that habit's completed field as true
-    // Use vector::length() to get the length
-    // Use vector::borrow_mut() to get a mutable reference to an element
-    // public fun complete_habit(list: &mut HabitList, index: u64) {
-    //     // Your code here
-    //     // Hint: if (index < length) { ... }
-    // }
 }
 
