@@ -10,6 +10,7 @@
 module challenge::day_07 {
     use std::vector;
     use std::string::{Self, String};
+    use std::unit_test::assert_eq; // ile yapmak istedim; testleri geciyor ama build'de sorun cikariyor anlamadim.
 
     // Copy from day_06: Habit struct with String
     public struct Habit has copy, drop {
@@ -51,25 +52,25 @@ module challenge::day_07 {
         }
     }
 
-    // Note: assert! is a built-in macro in Move 2024 - no import needed!
+    #[test]
+    public fun test_add_habits() {
+        let mut list =  empty_list();
+        let habit1 = new_habit(b"habit1".to_string());
+        let habit2 = new_habit(b"habit2".to_string());
+        add_habit(&mut list, habit1);
+        add_habit(&mut list, habit2);
+        let length = vector::length(&list.habits);
+        assert_eq!(length, 2);
+    }
 
-    // TODO: Write a test 'test_add_habits' that:
-    // - Creates an empty list
-    // - Adds 1-2 habits
-    // - Checks that the list length is correct
-    // #[test]
-    // fun test_add_habits() {
-    //     // Your code here
-    //     // Use b"Exercise".to_string() to create a String
-    // }
-
-    // TODO: Write a test 'test_complete_habit' that:
-    // - Creates a list and adds a habit
-    // - Completes the habit
-    // - Checks that completed == true
-    // #[test]
-    // fun test_complete_habit() {
-    //     // Your code here
-    // }
+    #[test]
+    fun test_complete_habit() {
+        let mut list = empty_list();
+        let habit = new_habit(b"habit".to_string());
+        add_habit(&mut list, habit);
+        complete_habit(&mut list, 0);
+        let completed_habit = vector::borrow(&list.habits, 0);
+        assert_eq!(completed_habit.completed, true);
+    }
 }
 
