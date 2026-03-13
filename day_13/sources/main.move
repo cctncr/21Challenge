@@ -61,22 +61,58 @@ module challenge::day_13 {
         option::none()
     }
 
-    // TODO: Write a function 'total_reward' that:
-    // - Takes board: &TaskBoard
-    // - Returns u64 (sum of all task rewards)
-    // - Loops through all tasks and sums their rewards
-    // public fun total_reward(board: &TaskBoard): u64 {
-    //     // Your code here
-    //     // Initialize total = 0
-    //     // Loop through tasks, add each reward to total
-    // }
+    public fun complete_task(task: &mut Task) {
+        task.status = TaskStatus::Completed;
+    }
 
-    // TODO: Write a function 'completed_count' that:
-    // - Takes board: &TaskBoard
-    // - Returns u64 (count of completed tasks)
-    // - Loops through tasks and counts those with status == Completed
-    // public fun completed_count(board: &TaskBoard): u64 {
-    //     // Your code here
-    // }
+    public fun total_reward(board: &TaskBoard): u64 {
+        let mut sum = 0u64;
+        let mut i = 0;
+        let len = vector::length(&board.tasks);
+        while (i < len) {
+            sum = sum + vector::borrow(&board.tasks, i).reward;
+            i = i + 1;
+        };
+        sum
+    }
+
+    public fun completed_count(board: &TaskBoard): u64 {
+        let mut count = 0u64;
+        let mut i = 0;
+        let len = vector::length(&board.tasks);
+        while (i < len) {
+            let task = vector::borrow(&board.tasks, i);
+            if (task.status == TaskStatus::Completed) {
+                count = count + 1;
+            };
+            i = i + 1;
+        };
+        count
+    }
+
+    #[test]
+    fun test_total_reward() {
+        use std::string;
+        let mut board = new_board(@0x1);
+        add_task(&mut board, new_task(string::utf8(b"Task A"), 100));
+        add_task(&mut board, new_task(string::utf8(b"Task B"), 250));
+        add_task(&mut board, new_task(string::utf8(b"Task C"), 50));
+        assert!(total_reward(&board) == 400, 0);
+    }
+
+    #[test]
+    fun test_completed_count() {
+        use std::string;
+        let mut board = new_board(@0x1);
+        let mut t1 = new_task(string::utf8(b"Task A"), 100);
+        let t2 = new_task(string::utf8(b"Task B"), 200);
+        let mut t3 = new_task(string::utf8(b"Task C"), 300);
+        complete_task(&mut t1);
+        complete_task(&mut t3);
+        add_task(&mut board, t1);
+        add_task(&mut board, t2);
+        add_task(&mut board, t3);
+        assert!(completed_count(&board) == 2, 0);
+    }
 }
 
