@@ -84,25 +84,45 @@ module challenge::day_14 {
 
     // Note: assert! is a built-in macro in Move 2024 - no import needed!
 
-    // TODO: Write at least 3 tests:
-    // 
-    // Test 1: test_create_board_and_add_task
-    // - Create a board with an owner
-    // - Add a task
-    // - Verify the task was added
-    // 
-    // Test 2: test_complete_task
-    // - Create board, add tasks
-    // - Complete a task
-    // - Verify completed_count is correct
-    // 
-    // Test 3: test_total_reward
-    // - Create board, add multiple tasks with different rewards
-    // - Verify total_reward is correct
-    // 
-    // #[test]
-    // fun test_create_board_and_add_task() {
-    //     // Your code here
-    // }
+    #[test]
+    fun test_create_board_and_add_task() {
+        let mut board = new_board(@0xAB);
+        assert_eq!(vector::length(&board.tasks), 0);
+
+        add_task(&mut board, new_task(string::utf8(b"Hunt the dragon"), 500));
+        assert_eq!(vector::length(&board.tasks), 1);
+    }
+
+    #[test]
+    fun test_complete_task_updates_count() {
+        let mut board = new_board(@0xAB);
+        add_task(&mut board, new_task(string::utf8(b"Patrol the walls"), 200));
+        add_task(&mut board, new_task(string::utf8(b"Collect herbs"), 75));
+        add_task(&mut board, new_task(string::utf8(b"Escort merchant"), 300));
+
+        assert_eq!(completed_count(&board), 0);
+
+        complete_task(vector::borrow_mut(&mut board.tasks, 1));
+        complete_task(vector::borrow_mut(&mut board.tasks, 2));
+
+        assert_eq!(completed_count(&board), 2);
+    }
+
+    #[test]
+    fun test_total_reward_sums_all_tasks() {
+        let mut board = new_board(@0xAB);
+        add_task(&mut board, new_task(string::utf8(b"Slay goblins"), 150));
+        add_task(&mut board, new_task(string::utf8(b"Find relic"), 400));
+        add_task(&mut board, new_task(string::utf8(b"Deliver letter"), 30));
+
+        assert_eq!(total_reward(&board), 580);
+    }
+
+    #[test]
+    fun test_empty_board_has_zero_reward_and_count() {
+        let board = new_board(@0xFF);
+        assert_eq!(total_reward(&board), 0);
+        assert_eq!(completed_count(&board), 0);
+    }
 }
 
