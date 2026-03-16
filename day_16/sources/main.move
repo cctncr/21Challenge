@@ -74,22 +74,14 @@ module challenge::day_16 {
         counters.harvested = counters.harvested + 1;
     }
 
-    // TODO: Define a struct called 'Farm' with:
-    // - id: UID (this makes it a Sui object)
-    // - counters: FarmCounters
-    // Add 'key' ability (required for Sui objects)
-    // public struct Farm has key {
-    //     id: UID,
-    //     counters: FarmCounters,
-    // }
+    public struct Farm has key {
+        id: UID,
+        counters: FarmCounters,
+    }
 
-    // TODO: Write a constructor 'new_farm' that:
-    // - Takes ctx: &mut TxContext
-    // - Creates a UID using object::new(ctx)
-    // - Returns a Farm with the UID and default counters
-    // fun new_farm(ctx: &mut TxContext): Farm {
-    //     // Your code here
-    //     // Hint: let id = object::new(ctx);
-    // }
+    fun new_farm(ctx: &mut TxContext): Farm {
+        let uid = object::new(ctx);
+        Farm { id: uid, counters: new_counters() }
+    }
 }
 
