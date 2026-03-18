@@ -101,18 +101,12 @@ module challenge::day_18 {
         harvest(&mut farm.counters, plotId);
     }
 
-    // TODO: Write an entry function 'plant_on_farm_entry' that:
-    // - Takes farm: &mut Farm, plotId: u8
-    // - Calls plant_on_farm(farm, plotId)
-    // entry fun plant_on_farm_entry(farm: &mut Farm, plotId: u8) {
-    //     // Your code here
-    // }
+    entry fun plant_on_farm_entry(farm: &mut Farm, plotId: u8) {
+        plant_on_farm(farm, plotId)
+    }
 
-    // TODO: Write an entry function 'harvest_from_farm_entry' that:
-    // - Takes farm: &mut Farm, plotId: u8
-    // - Calls harvest_from_farm(farm, plotId)
-    // entry fun harvest_from_farm_entry(farm: &mut Farm, plotId: u8) {
-    //     // Your code here
-    // }
+    entry fun harvest_from_farm_entry(farm: &mut Farm, plotId: u8) {
+        harvest_from_farm(farm, plotId)
+    }
 }
 
