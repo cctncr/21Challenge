@@ -107,23 +107,34 @@ module challenge::day_19 {
         harvest_from_farm(farm, plotId);
     }
 
-    // TODO: Write a function 'total_planted' that:
-    // - Takes farm: &Farm (read-only reference)
-    // - Returns u64 (the planted count)
-    // public fun total_planted(farm: &Farm): u64 {
-    //     // Your code here
-    // }
+    public fun total_planted(farm: &Farm): u64 {
+        let counters = &farm.counters;
+        counters.planted
+    }
 
-    // TODO: Write a function 'total_harvested' that:
-    // - Takes farm: &Farm
-    // - Returns u64 (the harvested count)
-    // public fun total_harvested(farm: &Farm): u64 {
-    //     // Your code here
-    // }
+    public fun total_harvested(farm: &Farm): u64 {
+        let counters = &farm.counters;
+        counters.harvested
+    }
 
-    // TODO: (Optional) Write a test that:
-    // - Creates a farm
-    // - Plants once
-    // - Checks that total_planted returns 1
+    #[test_only]
+    use sui::test_scenario;
+
+    #[test]
+    fun test_total_planted_after_one_plant() {
+        let mut scenario = test_scenario::begin(@0xA);
+        {
+            let ctx = test_scenario::ctx(&mut scenario);
+            create_farm(ctx);
+        };
+        test_scenario::next_tx(&mut scenario, @0xA);
+        {
+            let mut farm = test_scenario::take_shared<Farm>(&scenario);
+            plant_on_farm_entry(&mut farm, 5);
+            assert!(total_planted(&farm) == 1, 0);
+            test_scenario::return_shared(farm);
+        };
+        test_scenario::end(scenario);
+    }
 }
 
