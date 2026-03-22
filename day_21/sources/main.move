@@ -1,17 +1,12 @@
 /// DAY 21: Final Tests & Cleanup
-/// 
-/// Today you will:
-/// 1. Write comprehensive tests for the farm
-/// 2. Clean up your code
-/// 3. Review what you've learned
-///
-/// Note: You can copy code from day_20/sources/solution.move if needed
 
 module challenge::day_21 {
     use sui::event;
 
-    // Note: test_scenario is available in Sui framework for testing
-    // You'll need to import it when writing tests: use sui::test_scenario;
+    #[test_only]
+    use sui::test_scenario;
+    #[test_only]
+    use std::unit_test::assert_eq;
 
     // Copy from day_20: All structs and functions
     
@@ -107,7 +102,6 @@ module challenge::day_21 {
         farm.counters.planted
     }
 
-    // Used in tests (see solution.move)
     fun total_harvested(farm: &Farm): u64 {
         farm.counters.harvested
     }
@@ -128,45 +122,133 @@ module challenge::day_21 {
         harvest_from_farm(farm, plotId);
     }
 
-    // TODO: Write comprehensive tests:
-    // 
-    // Test 1: test_create_farm
-    // - Create a farm (shared object)
-    // - Check initial counters are zero
-    // - Use test_scenario::take_shared to get the farm
-    // 
-    // Test 2: test_planting_increases_counter
-    // - Create farm, plant plotId 1
-    // - Verify planted counter is 1
-    // - Use test_scenario::take_shared and test_scenario::return_shared
-    // 
-    // Test 3: test_harvesting_increases_counter
-    // - Create farm, plant plotId 1, then harvest plotId 1
-    // - Verify both counters are 1
-    // 
-    // Test 4: test_multiple_operations
-    // - Plant plotIds 3, 5, 18 (in any order)
-    // - Harvest plotId 5
-    // - Verify planted counter is 3, harvested counter is 1
-    // 
-    // Test 5: test_invalid_plot_id
-    // - Try to plant plotId 0 or 21 (should abort)
-    // 
-    // Test 6: test_duplicate_plot
-    // - Plant plotId 1, then try to plant plotId 1 again (should abort)
-    // 
-    // Test 7: test_plot_limit
-    // - Try to plant 21 plots (should abort on the 21st)
-    // 
-    // Test 8: test_harvest_nonexistent_plot
-    // - Try to harvest a plot that doesn't exist (should abort)
-    // 
-    // Use test_scenario::begin, test_scenario::next_tx, test_scenario::take_shared, etc.
-    // Note: Since farm is a shared object, use test_scenario::take_shared instead of take_from_sender
+    #[test]
+    fun test_create_farm() {
+        let mut s = test_scenario::begin(@0xA);
+        create_farm(test_scenario::ctx(&mut s));
 
-    // TODO: Review all three projects (habit_tracker, bounty_board, farm_simulator)
-    // Make sure function names are consistent
-    // Remove any unnecessary comments
-    // Ensure all tests pass
+        test_scenario::next_tx(&mut s, @0xA);
+        let f = test_scenario::take_shared<Farm>(&s);
+        assert_eq!(total_planted(&f), 0);
+        assert_eq!(total_harvested(&f), 0);
+        test_scenario::return_shared(f);
+
+        test_scenario::end(s);
+    }
+
+    #[test]
+    fun test_planting_increases_counter() {
+        let mut s = test_scenario::begin(@0xA);
+        create_farm(test_scenario::ctx(&mut s));
+
+        test_scenario::next_tx(&mut s, @0xA);
+        let mut f = test_scenario::take_shared<Farm>(&s);
+        plant_on_farm(&mut f, 1);
+        assert_eq!(total_planted(&f), 1);
+        assert_eq!(total_harvested(&f), 0);
+        test_scenario::return_shared(f);
+
+        test_scenario::end(s);
+    }
+
+    #[test]
+    fun test_harvesting_increases_counter() {
+        let mut s = test_scenario::begin(@0xA);
+        create_farm(test_scenario::ctx(&mut s));
+
+        test_scenario::next_tx(&mut s, @0xA);
+        let mut f = test_scenario::take_shared<Farm>(&s);
+        plant_on_farm(&mut f, 1);
+        harvest_from_farm(&mut f, 1);
+        assert_eq!(total_planted(&f), 1);
+        assert_eq!(total_harvested(&f), 1);
+        test_scenario::return_shared(f);
+
+        test_scenario::end(s);
+    }
+
+    #[test]
+    fun test_multiple_operations() {
+        let mut s = test_scenario::begin(@0xA);
+        create_farm(test_scenario::ctx(&mut s));
+
+        test_scenario::next_tx(&mut s, @0xA);
+        let mut f = test_scenario::take_shared<Farm>(&s);
+        plant_on_farm(&mut f, 3);
+        plant_on_farm(&mut f, 5);
+        plant_on_farm(&mut f, 18);
+        harvest_from_farm(&mut f, 5);
+        assert_eq!(total_planted(&f), 3);
+        assert_eq!(total_harvested(&f), 1);
+        test_scenario::return_shared(f);
+
+        test_scenario::end(s);
+    }
+
+    #[test]
+    #[expected_failure(abort_code = E_INVALID_PLOT_ID)]
+    fun test_invalid_plot_id_zero() {
+        let mut s = test_scenario::begin(@0xA);
+        create_farm(test_scenario::ctx(&mut s));
+        test_scenario::next_tx(&mut s, @0xA);
+        let mut f = test_scenario::take_shared<Farm>(&s);
+        plant_on_farm(&mut f, 0);
+        test_scenario::return_shared(f);
+        test_scenario::end(s);
+    }
+
+    #[test]
+    #[expected_failure(abort_code = E_INVALID_PLOT_ID)]
+    fun test_invalid_plot_id_too_large() {
+        let mut s = test_scenario::begin(@0xA);
+        create_farm(test_scenario::ctx(&mut s));
+        test_scenario::next_tx(&mut s, @0xA);
+        let mut f = test_scenario::take_shared<Farm>(&s);
+        plant_on_farm(&mut f, 21);
+        test_scenario::return_shared(f);
+        test_scenario::end(s);
+    }
+
+    #[test]
+    #[expected_failure(abort_code = E_PLOT_ALREADY_EXISTS)]
+    fun test_duplicate_plot() {
+        let mut s = test_scenario::begin(@0xA);
+        create_farm(test_scenario::ctx(&mut s));
+        test_scenario::next_tx(&mut s, @0xA);
+        let mut f = test_scenario::take_shared<Farm>(&s);
+        plant_on_farm(&mut f, 7);
+        plant_on_farm(&mut f, 7);
+        test_scenario::return_shared(f);
+        test_scenario::end(s);
+    }
+
+    #[test]
+    #[expected_failure(abort_code = E_PLOT_LIMIT_EXCEEDED)]
+    fun test_plot_limit() {
+        let mut s = test_scenario::begin(@0xA);
+        create_farm(test_scenario::ctx(&mut s));
+        test_scenario::next_tx(&mut s, @0xA);
+        let mut f = test_scenario::take_shared<Farm>(&s);
+        let mut i: u8 = 1;
+        while (i <= 20) {
+            plant_on_farm(&mut f, i);
+            i = i + 1;
+        };
+        plant_on_farm(&mut f, 1); // 21st attempt — should abort
+        test_scenario::return_shared(f);
+        test_scenario::end(s);
+    }
+
+    #[test]
+    #[expected_failure(abort_code = E_PLOT_NOT_FOUND)]
+    fun test_harvest_nonexistent_plot() {
+        let mut s = test_scenario::begin(@0xA);
+        create_farm(test_scenario::ctx(&mut s));
+        test_scenario::next_tx(&mut s, @0xA);
+        let mut f = test_scenario::take_shared<Farm>(&s);
+        harvest_from_farm(&mut f, 9);
+        test_scenario::return_shared(f);
+        test_scenario::end(s);
+    }
 }
 
